@@ -32,6 +32,7 @@ class CategoryList(ListView):
             count_entries_published=Count('entries'))
 
 
+# will change
 class BaseCategoryDetail(object):
     """
     Mixin providing the behavior of the category detail view,
