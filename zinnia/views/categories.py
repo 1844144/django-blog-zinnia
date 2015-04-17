@@ -5,6 +5,7 @@ from django.views.generic.list import ListView
 from django.views.generic.list import BaseListView
 
 from zinnia.models.category import Category
+from zinnia.models.entry import Entry
 from zinnia.settings import PAGINATION
 from zinnia.views.mixins.templates import EntryQuerysetTemplateResponseMixin
 from zinnia.views.mixins.prefetch_related import PrefetchCategoriesAuthorsMixin
@@ -32,7 +33,6 @@ class CategoryList(ListView):
             count_entries_published=Count('entries'))
 
 
-# will change
 class BaseCategoryDetail(object):
     """
     Mixin providing the behavior of the category detail view,
@@ -45,8 +45,15 @@ class BaseCategoryDetail(object):
         Retrieve the category by his path and
         build a queryset of her published entries.
         """
+
         self.category = get_category_or_404(self.kwargs['path'])
-        return self.category.entries_published()
+        
+        # addon: get all entires of all other categories 
+        all_categories = self.category.get_descendants(include_self=True)
+        result = [item.pk for cat in all_categories for item in cat.entries_published()  ]
+        return Entry.objects.filter(pk__in=result)
+        
+        # return self.category.entries_published()
 
     def get_context_data(self, **kwargs):
         """
